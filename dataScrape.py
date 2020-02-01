@@ -21,7 +21,7 @@ page = "https://www.transfermarkt.co.uk/andy-carroll/verletzungen/spieler/48066"
 pageTree = requests.get(page, headers=headers)
 pageSoup = BeautifulSoup(pageTree.content, 'html.parser')
 
-#print(pageSoup)
+# Get and store nDaysInjured
 daysInjArr= []
 DaysInjured = pageSoup.find_all("td", {"class": "rechts"})
 for i in DaysInjured:
@@ -31,15 +31,39 @@ for i in DaysInjured:
 for i in daysInjArr:
   print("Days inj = {}".format(i))
 
+# Get and store club player is signed to while injured
 # wappen is German for coat of arms i.e. club badge. All of the img sources have this in their endpoint
 clubInjArr = []
 ClubInjuredFor = pageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
 for i in ClubInjuredFor:
   clubInjArr.append(i["alt"])
+# current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
+del(clubInjArr[0])
 
 for i in clubInjArr:
   print("Club inj for = {}".format(i))
 
+# Get and store injury type
+typeInjArr= []
+# Many classes have hauptlink in name but we want an exact match
+# most recent injury is also highlighted red (bg_rot_20) so we need to collect that too
+TypeOfInjury = pageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['hauptlink'] or tag.get('class') == ['hauptlink','bg_rot_20'])) 
+for i in TypeOfInjury:
+  print(i.text)
+  typeInjArr.append(i.text)
+
+for i in typeInjArr:
+  print("Type of injury = {}".format(i))
+
+multiArr = []
+multiArr.append(typeInjArr)
+multiArr.append(clubInjArr)
+multiArr.append(daysInjArr)
+print("type len = {}".format(len(typeInjArr)))
+print("club len = {}".format(len(clubInjArr)))
+print("days len = {}".format(len(daysInjArr)))
+if not all(len(i) == len(multiArr[0]) for i in multiArr):
+  sys.exit("Arrays are not all the same length. This is a problem.")
 # TODO Store
 # 1) Total number of days injured - done (just need to sum daysInjArr)
 # 2) Total number of individual injury occurences
