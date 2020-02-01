@@ -31,8 +31,24 @@ for i in DaysInjured:
 for i in daysInjArr:
   print("Days inj = {}".format(i))
 
+# wappen is German for coat of arms i.e. club badge. All of the img sources have this in their endpoint
+clubInjArr = []
+ClubInjuredFor = pageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
+for i in ClubInjuredFor:
+  clubInjArr.append(i["alt"])
+
+for i in clubInjArr:
+  print("Club inj for = {}".format(i))
+
 # TODO Store
-# 1) Total number of days injured
+# 1) Total number of days injured - done (just need to sum daysInjArr)
 # 2) Total number of individual injury occurences
-# 3) Club player was signed to when injured
+# 3) Club player was signed to when injured - done
 # 4) Type of injury (is it the same one every time?)
+
+# TODO Check
+# 1) Ensure arrs are all the same length
+
+# TODO Functionality
+# 1) If there are multiple pages of injury history, need a way to know how many pages of info there are
+# - Can add "ajax/yw1/page/2" to link but at some point we won't get a 200
