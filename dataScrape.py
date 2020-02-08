@@ -59,8 +59,28 @@ for i in tfDates:
  
 for i in datesArr:
   print(i)
-# TODO need to store the clubs the player was leaving/joining for each transfer
+
+# Get clubs transferred between
+clubTransfers = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
+
+clubTrnsArr = []
+for i in clubTransfers:
+  clubTrnsArr.append(i["alt"])
+# current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
+del(clubTrnsArr[0])
+
+for i in range(len(clubTrnsArr)):
+  print('From {} to {}'.format(clubTrnsArr[i],clubTrnsArr[i+1]))
+  i = i+1
+  if (i+1)==len(clubTrnsArr):
+    break
 # TODO figure out how this time normalisation will work - are we doing total days at club or by season?
+# We need to use the above to determine how long a player played for each club
+# Could do a function that takes clubTrnsArr and datesArr and determines length of period at each club
+# Then have two DF columns - club played for and time played for (in days)...but how would this work with transferring to and from clubs?
+# Group by season? By time signed to club?
+# Naive approach would be just add together all the days the player spent at the club, but that fails to account for e.g. one injury having a knockon
+# effect (chronology of injuries).
 
 multiArr = []
 multiArr.append(typeInjArr)
