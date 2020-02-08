@@ -54,11 +54,11 @@ tfDates = tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class')
 datesArr = []
 for i in tfDates:
   if "," in i.text:
-    datesArr.append(i.text)
-
+    # need to convert date format into datetime object for processing
+    datesArr.append(datetime.strptime(i.text, '%b %d, %Y'))
+ 
 for i in datesArr:
-  testDate = datetime.strptime(i, '%b %d, %Y')
-  print('{} | {}'.format(i,testDate))
+  print(i)
 # TODO need to store the clubs the player was leaving/joining for each transfer
 # TODO figure out how this time normalisation will work - are we doing total days at club or by season?
 
