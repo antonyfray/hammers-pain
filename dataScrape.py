@@ -69,11 +69,20 @@ for i in clubTransfers:
 # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
 del(clubTrnsArr[0])
 
-for i in range(len(clubTrnsArr)):
-  print('From {} to {}'.format(clubTrnsArr[i],clubTrnsArr[i+1]))
-  i = i+1
+#for i in range(len(clubTrnsArr)):
+#  print('From {} to {}'.format(clubTrnsArr[i],clubTrnsArr[i+1]))
+#  i = i+1
+#  if (i+1)==len(clubTrnsArr):
+#    break
+
+for i in range(0,len(clubTrnsArr),2):
   if (i+1)==len(clubTrnsArr):
     break
+  print('From {} to {}'.format(clubTrnsArr[i],clubTrnsArr[i+1]))
+  #i = i+1
+
+
+
 # TODO figure out how this time normalisation will work - are we doing total days at club or by season?
 # We need to use the above to determine how long a player played for each club
 # Could do a function that takes clubTrnsArr and datesArr and determines length of period at each club
