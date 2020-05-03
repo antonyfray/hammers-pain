@@ -1,7 +1,11 @@
 stages:
-  -  scrape-carroll
+  - scrape-carroll
+  - scrape-lanzini
 
 test:
   stage: scrape-carroll
   script:
-  - python testPipeline.py
+  - python dataScrape.py andy-carroll 48066
+  stage: scrape-lanzini
+  script:
+  - python dataScrape.py manuel-lanzini 135853
