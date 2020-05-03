@@ -2,10 +2,11 @@ stages:
   - scrape-carroll
   - scrape-lanzini
 
-test:
+test-carroll:
   stage: scrape-carroll
   script:
   - python dataScrape.py andy-carroll 48066
+test-lanzini:
   stage: scrape-lanzini
   script:
   - python dataScrape.py manuel-lanzini 135853
