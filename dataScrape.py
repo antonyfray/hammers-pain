@@ -19,7 +19,6 @@ headers = {'User-Agent':
    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
 
 # Begin Andy Carroll injury scrape
-#injPage = "https://www.transfermarkt.co.uk/andy-carroll/verletzungen/spieler/48066"
 injPage = "https://www.transfermarkt.co.uk/"+playerName+"/verletzungen/spieler/"+playerID
 injPageTree = requests.get(injPage, headers=headers)
 injPageSoup = BeautifulSoup(injPageTree.content, 'html.parser')
@@ -67,7 +66,7 @@ for i in typeInjArr:
 #
 # Get date of transfer
 #
-tfPage = "https://www.transfermarkt.co.uk/andy-carroll/transfers/spieler/48066"
+tfPage = "https://www.transfermarkt.co.uk/"+playerName+"/transfers/spieler/"+playerID
 tfPageTree = requests.get(tfPage, headers=headers)
 tfPageSoup = BeautifulSoup(tfPageTree.content, 'html.parser')
 tfDates = tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['zentriert','hide-for-small']))
