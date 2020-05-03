@@ -1,3 +1,5 @@
+
+
 stages:
   - scrape-carroll
   - scrape-lanzini
@@ -5,8 +7,9 @@ stages:
 test-carroll:
   stage: scrape-carroll
   script:
+  - python -V
   - python dataScrape.py andy-carroll 48066
-test-lanzini:
-  stage: scrape-lanzini
-  script:
-  - python dataScrape.py manuel-lanzini 135853
+#test-lanzini:
+#  stage: scrape-lanzini
+#  script:
+#  - python dataScrape.py manuel-lanzini 135853
