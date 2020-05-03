@@ -8,8 +8,9 @@ test-carroll:
   stage: scrape-carroll
   script:
   - python3 -V
-  - python dataScrape.py andy-carroll 48066
+  - pip install requests
+  - python3 dataScrape.py andy-carroll 48066
 #test-lanzini:
 #  stage: scrape-lanzini
 #  script:
-#  - python dataScrape.py manuel-lanzini 135853
+#  - python3 dataScrape.py manuel-lanzini 135853
