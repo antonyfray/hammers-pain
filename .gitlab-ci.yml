@@ -2,6 +2,6 @@ stages:
   - test
 
 test:
-  stage: test
+  stage: TestDataScrape
   script:
   - python testPipeline.py

@@ -3,13 +3,24 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
-#import datetime
+import sys
 
+#
+# From input
+#
+playerName = sys.argv[1] # must be lower case
+playerID = sys.argv[2] 
+print("playerName = {}".format(playerName))
+print("playerID = {}".format(playerID))
+#
+# BeautifulSoup config
+#
 headers = {'User-Agent': 
    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
 
 # Begin Andy Carroll injury scrape
-injPage = "https://www.transfermarkt.co.uk/andy-carroll/verletzungen/spieler/48066"
+#injPage = "https://www.transfermarkt.co.uk/andy-carroll/verletzungen/spieler/48066"
+injPage = "https://www.transfermarkt.co.uk/"+playerName+"/verletzungen/spieler/"+playerID
 injPageTree = requests.get(injPage, headers=headers)
 injPageSoup = BeautifulSoup(injPageTree.content, 'html.parser')
 
