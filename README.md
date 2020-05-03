@@ -13,3 +13,12 @@ python dataScrape.py andy-carroll 48066
  kieron-dyer | 3118 
  robert-snodgrass | 22614 
  manuel-lanzini | 135853 
+
+
+# TODO
+- utility for looking up tfmarkt ID from player name
+- accept list of players as arg
+- investigate gitlab runners - if we use our own image, where will we store it, and will it cost money
+- tighten security in general
+- tidy dataScrape.py into functions, it's a massive mess
+- write proper tests
