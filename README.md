@@ -7,8 +7,9 @@ An example of a valid run configuration is
 ```
 python dataScrape.py andy-carroll 48066
 ```
-| Name        | ID  |
-| andy-carroll | 48066 |
-| kieron-dyer | 3118 |
-| robert-snodgrass | 22614 | 
-| manuel-lanzini | 135853 |
+ Name        | ID  
+ --- | ---
+ andy-carroll | 48066 
+ kieron-dyer | 3118 
+ robert-snodgrass | 22614 
+ manuel-lanzini | 135853 
