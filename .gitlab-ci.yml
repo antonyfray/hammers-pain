@@ -1,7 +1,7 @@
 stages:
-  - test
+  -  scrape-carroll
 
 test:
-  stage: test
+  stage: scrape-carroll
   script:
   - python testPipeline.py
