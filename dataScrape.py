@@ -5,109 +5,111 @@ import pandas as pd
 from datetime import datetime
 import sys
 
-#
-# From input
-#
-playerName = sys.argv[1] # must be lower case
-playerID = sys.argv[2] 
-print("playerName = {}".format(playerName))
-print("playerID = {}".format(playerID))
-#
-# BeautifulSoup config
-#
-headers = {'User-Agent': 
-   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
 
-# Begin Andy Carroll injury scrape
-injPage = "https://www.transfermarkt.co.uk/"+playerName+"/verletzungen/spieler/"+playerID
-injPageTree = requests.get(injPage, headers=headers)
-injPageSoup = BeautifulSoup(injPageTree.content, 'html.parser')
+if __name__ == "__main__":
+    #
+    # From input
+    #
+    playerName = sys.argv[1] # must be lower case
+    playerID = sys.argv[2]
+    print("playerName = {}".format(playerName))
+    print("playerID = {}".format(playerID))
+    #
+    # BeautifulSoup config
+    #
+    headers = {'User-Agent':
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
 
-#
-# Get and store nDaysInjured
-#
-daysInjArr= []
-DaysInjured = injPageSoup.find_all("td", {"class": "rechts"})
-for i in DaysInjured:
-  if "days" in i.text:
-    daysInjArr.append(i.text.split()[0])
+    # Begin Andy Carroll injury scrape
+    injPage = "https://www.transfermarkt.co.uk/"+playerName+"/verletzungen/spieler/"+playerID
+    injPageTree = requests.get(injPage, headers=headers)
+    injPageSoup = BeautifulSoup(injPageTree.content, 'html.parser')
 
-for i in daysInjArr:
-  print("Days inj = {}".format(i))
+    #
+    # Get and store nDaysInjured
+    #
+    daysInjArr= []
+    DaysInjured = injPageSoup.find_all("td", {"class": "rechts"})
+    for i in DaysInjured:
+        if "days" in i.text:
+            daysInjArr.append(i.text.split()[0])
 
-#
-# Get and store club player is signed to while injured
-#
-# wappen is German for coat of arms i.e. club badge. All of the img sources have this in their endpoint
-clubInjArr = []
-ClubInjuredFor = injPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
-for i in ClubInjuredFor:
-  clubInjArr.append(i["alt"])
-# current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
-del(clubInjArr[0])
+    for i in daysInjArr:
+        print("Days inj = {}".format(i))
 
-for i in clubInjArr:
-  print("Club inj for = {}".format(i))
+    #
+    # Get and store club player is signed to while injured
+    #
+    # wappen is German for coat of arms i.e. club badge. All of the img sources have this in their endpoint
+    clubInjArr = []
+    ClubInjuredFor = injPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
+    for i in ClubInjuredFor:
+        clubInjArr.append(i["alt"])
+        # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
+    del(clubInjArr[0])
 
-#
-# Get and store injury type
-#
-typeInjArr = []
-# Many classes have hauptlink in name but we want an exact match
-# most recent injury is also highlighted red (bg_rot_20) so we need to collect that too
-TypeOfInjury = injPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['hauptlink'] or tag.get('class') == ['hauptlink','bg_rot_20'])) 
-for i in TypeOfInjury:
-  print(i.text)
-  typeInjArr.append(i.text)
+    for i in clubInjArr:
+        print("Club inj for = {}".format(i))
 
-for i in typeInjArr:
-  print("Type of injury = {}".format(i))
+    #
+    # Get and store injury type
+    #
+    typeInjArr = []
+    # Many classes have hauptlink in name but we want an exact match
+    # most recent injury is also highlighted red (bg_rot_20) so we need to collect that too
+    TypeOfInjury = injPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['hauptlink'] or tag.get('class') == ['hauptlink','bg_rot_20']))
+    for i in TypeOfInjury:
+        print(i.text)
+        typeInjArr.append(i.text)
 
-#
-# Get date of transfer
-#
-tfPage = "https://www.transfermarkt.co.uk/"+playerName+"/transfers/spieler/"+playerID
-tfPageTree = requests.get(tfPage, headers=headers)
-tfPageSoup = BeautifulSoup(tfPageTree.content, 'html.parser')
-tfDates = tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['zentriert','hide-for-small']))
-tfDatesArr = []
-for i in tfDates:
-  if "," in i.text:
-    # need to convert date format into datetime object for processing
-    tfDatesArr.append(datetime.strptime(i.text, '%b %d, %Y'))
+    for i in typeInjArr:
+        print("Type of injury = {}".format(i))
 
-print("Transfer dates:") 
-for i in tfDatesArr:
-  print(i)
+    #
+    # Get date of transfer
+    #
+    tfPage = "https://www.transfermarkt.co.uk/"+playerName+"/transfers/spieler/"+playerID
+    tfPageTree = requests.get(tfPage, headers=headers)
+    tfPageSoup = BeautifulSoup(tfPageTree.content, 'html.parser')
+    tfDates = tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['zentriert','hide-for-small']))
+    tfDatesArr = []
+    for i in tfDates:
+        if "," in i.text:
+            # need to convert date format into datetime object for processing
+            tfDatesArr.append(datetime.strptime(i.text, '%b %d, %Y'))
 
-daysAtClubArr = []
-print("Days spent at each club")
-# Need to determine time spent at current club
-currentDate = datetime.now() 
-print("currentDate = {}".format(currentDate))
-for i in range(0,len(tfDatesArr)):
-  #if (i+1)==len(tfDatesArr):
-  #  break
-  if i is 0:
-    print((currentDate - tfDatesArr[i]).days)
-  else:
-    print((tfDatesArr[i-1]-tfDatesArr[i]).days)
-  
-#
-# Get clubs transferred between
-#
-clubTransfers = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
+    print("Transfer dates:")
+    for i in tfDatesArr:
+        print(i)
 
-clubTrnsArr = []
-for i in clubTransfers:
-  clubTrnsArr.append(i["alt"])
-# current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
-del(clubTrnsArr[0])
+    daysAtClubArr = []
+    print("Days spent at each club")
+    # Need to determine time spent at current club
+    currentDate = datetime.now()
+    print("currentDate = {}".format(currentDate))
+    for i in range(0,len(tfDatesArr)):
+        #if (i+1)==len(tfDatesArr):
+        #  break
+        if i is 0:
+            print((currentDate - tfDatesArr[i]).days)
+        else:
+            print((tfDatesArr[i-1]-tfDatesArr[i]).days)
 
-for i in range(0,len(clubTrnsArr),2):
-  if (i+1)==len(clubTrnsArr):
-    break
-  print('From {} to {}'.format(clubTrnsArr[i],clubTrnsArr[i+1]))
+    #
+    # Get clubs transferred between
+    #
+    clubTransfers = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
+
+    clubTrnsArr = []
+    for i in clubTransfers:
+        clubTrnsArr.append(i["alt"])
+        # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
+    del(clubTrnsArr[0])
+
+    for i in range(0,len(clubTrnsArr),2):
+        if (i+1)==len(clubTrnsArr):
+            break
+        print('From {} to {}'.format(clubTrnsArr[i],clubTrnsArr[i+1]))
 
 
 
@@ -119,15 +121,15 @@ for i in range(0,len(clubTrnsArr),2):
 # Naive approach would be just add together all the days the player spent at the club, but that fails to account for e.g. one injury having a knockon
 # effect (chronology of injuries).
 
-multiArr = []
-multiArr.append(typeInjArr)
-multiArr.append(clubInjArr)
-multiArr.append(daysInjArr)
-print("type len = {}".format(len(typeInjArr)))
-print("club len = {}".format(len(clubInjArr)))
-print("days len = {}".format(len(daysInjArr)))
-if not all(len(i) == len(multiArr[0]) for i in multiArr):
-  sys.exit("Arrays are not all the same length. This is a problem.")
+    multiArr = []
+    multiArr.append(typeInjArr)
+    multiArr.append(clubInjArr)
+    multiArr.append(daysInjArr)
+    print("type len = {}".format(len(typeInjArr)))
+    print("club len = {}".format(len(clubInjArr)))
+    print("days len = {}".format(len(daysInjArr)))
+    if not all(len(i) == len(multiArr[0]) for i in multiArr):
+        sys.exit("Arrays are not all the same length. This is a problem.")
 
 
 #
@@ -150,4 +152,3 @@ if not all(len(i) == len(multiArr[0]) for i in multiArr):
 # TODO Functionality
 # 1) If there are multiple pages of injury history, need a way to know how many pages of info there are
 # - Can add "ajax/yw1/page/2" to link but at some point we won't get a 200
-
