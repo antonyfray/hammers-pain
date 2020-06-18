@@ -42,7 +42,7 @@ def getInjTypes(injPageSoup):
         print("Type of injury = {}".format(i))
     return typeInjLst
 
-def getTfDates(tfPageSoup):
+def getTransferDates(tfPageSoup):
     tfDatesLst = []
     tfDates = tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['zentriert','hide-for-small']))
     for i in tfDates:
@@ -70,6 +70,21 @@ def getDaysAtClub(tfPageSoup):
             print(days)
             daysAtClubLst.append(days)
     return daysAtClubLst
+
+def getClubTransfers(tfPageSoup):
+    clubTrnsLst = []
+    clubTransfers = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
+
+    for i in clubTransfers:
+        clubTrnsLst.append(i["alt"])
+        # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
+    del(clubTrnsLst[0])
+
+    for i in range(0,len(clubTrnsLst),2):
+        if (i+1)==len(clubTrnsLst):
+            break
+        print('From {} to {}'.format(clubTrnsLst[i],clubTrnsLst[i+1]))
+    return clubTrnsLst
 
 if __name__ == "__main__":
 
@@ -102,26 +117,13 @@ if __name__ == "__main__":
     typeInjLst = getInjTypes(injPageSoup)
 
     # Get date of transfer
-    tfDatesLst = getTfDates(tfPageSoup)
+    tfDatesLst = getTransferDates(tfPageSoup)
 
     # Get days spent at each club
     daysAtClubLst = getDaysAtClub(tfPageSoup)
 
     # Get clubs transferred between
-    clubTransfers = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
-
-    clubTrnsLst = []
-    for i in clubTransfers:
-        clubTrnsLst.append(i["alt"])
-        # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
-    del(clubTrnsLst[0])
-
-    for i in range(0,len(clubTrnsLst),2):
-        if (i+1)==len(clubTrnsLst):
-            break
-        print('From {} to {}'.format(clubTrnsLst[i],clubTrnsLst[i+1]))
-
-
+    clubTrnsList = getClubTransfers(tfPageSoup)
 
 # TODO figure out how this time normalisation will work - are we doing total days at club or by season?
 # We need to use the above to determine how long a player played for each club
