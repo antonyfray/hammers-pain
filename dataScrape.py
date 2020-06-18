@@ -5,6 +5,42 @@ import pandas as pd
 from datetime import datetime
 import sys
 
+def getDaysInj(injPageSoup):
+    daysInjLst = []
+    DaysInjured = injPageSoup.find_all("td", {"class": "rechts"})
+    for i in DaysInjured:
+        if "days" in i.text:
+            daysInjLst.append(i.text.split()[0])
+
+    for i in daysInjLst:
+        print("Days inj = {}".format(i))
+    return daysInjLst
+
+def getClubInjFor(injPageSoup):
+    # wappen is German for coat of arms i.e. club badge. All of the img sources have this in their endpoint
+    clubInjLst = []
+    ClubInjuredFor = injPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
+    for i in ClubInjuredFor:
+        clubInjLst.append(i["alt"])
+        # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
+    del(clubInjLst[0])
+
+    for i in clubInjLst:
+        print("Club inj for = {}".format(i))
+    return clubInjLst
+
+def getInjTypes(injPageSoup):
+    typeInjLst = []
+    # Many classes have hauptlink in name but we want an exact match
+    # most recent injury is also highlighted red (bg_rot_20) so we need to collect that too
+    TypeOfInjury = injPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['hauptlink'] or tag.get('class') == ['hauptlink','bg_rot_20']))
+    for i in TypeOfInjury:
+        print(i.text)
+        typeInjLst.append(i.text)
+
+    for i in typeInjLst:
+        print("Type of injury = {}".format(i))
+    return typeInjLst
 
 if __name__ == "__main__":
     #
@@ -25,45 +61,14 @@ if __name__ == "__main__":
     injPageTree = requests.get(injPage, headers=headers)
     injPageSoup = BeautifulSoup(injPageTree.content, 'html.parser')
 
-    #
     # Get and store nDaysInjured
-    #
-    daysInjArr= []
-    DaysInjured = injPageSoup.find_all("td", {"class": "rechts"})
-    for i in DaysInjured:
-        if "days" in i.text:
-            daysInjArr.append(i.text.split()[0])
+    daysInjLst = getDaysInj(injPageSoup)
 
-    for i in daysInjArr:
-        print("Days inj = {}".format(i))
-
-    #
     # Get and store club player is signed to while injured
-    #
-    # wappen is German for coat of arms i.e. club badge. All of the img sources have this in their endpoint
-    clubInjArr = []
-    ClubInjuredFor = injPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
-    for i in ClubInjuredFor:
-        clubInjArr.append(i["alt"])
-        # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
-    del(clubInjArr[0])
+    clubInjLst = getClubInjFor(injPageSoup)
 
-    for i in clubInjArr:
-        print("Club inj for = {}".format(i))
-
-    #
     # Get and store injury type
-    #
-    typeInjArr = []
-    # Many classes have hauptlink in name but we want an exact match
-    # most recent injury is also highlighted red (bg_rot_20) so we need to collect that too
-    TypeOfInjury = injPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['hauptlink'] or tag.get('class') == ['hauptlink','bg_rot_20']))
-    for i in TypeOfInjury:
-        print(i.text)
-        typeInjArr.append(i.text)
-
-    for i in typeInjArr:
-        print("Type of injury = {}".format(i))
+    typeInjLst = getInjTypes(injPageSoup)
 
     #
     # Get date of transfer
@@ -72,44 +77,44 @@ if __name__ == "__main__":
     tfPageTree = requests.get(tfPage, headers=headers)
     tfPageSoup = BeautifulSoup(tfPageTree.content, 'html.parser')
     tfDates = tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['zentriert','hide-for-small']))
-    tfDatesArr = []
+    tfDatesLst = []
     for i in tfDates:
         if "," in i.text:
             # need to convert date format into datetime object for processing
-            tfDatesArr.append(datetime.strptime(i.text, '%b %d, %Y'))
+            tfDatesLst.append(datetime.strptime(i.text, '%b %d, %Y'))
 
     print("Transfer dates:")
-    for i in tfDatesArr:
+    for i in tfDatesLst:
         print(i)
 
-    daysAtClubArr = []
+    daysAtClubLst = []
     print("Days spent at each club")
     # Need to determine time spent at current club
     currentDate = datetime.now()
     print("currentDate = {}".format(currentDate))
-    for i in range(0,len(tfDatesArr)):
-        #if (i+1)==len(tfDatesArr):
+    for i in range(0,len(tfDatesLst)):
+        #if (i+1)==len(tfDatesLst):
         #  break
         if i is 0:
-            print((currentDate - tfDatesArr[i]).days)
+            print((currentDate - tfDatesLst[i]).days)
         else:
-            print((tfDatesArr[i-1]-tfDatesArr[i]).days)
+            print((tfDatesLst[i-1]-tfDatesLst[i]).days)
 
     #
     # Get clubs transferred between
     #
     clubTransfers = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
 
-    clubTrnsArr = []
+    clubTrnsLst = []
     for i in clubTransfers:
-        clubTrnsArr.append(i["alt"])
+        clubTrnsLst.append(i["alt"])
         # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
-    del(clubTrnsArr[0])
+    del(clubTrnsLst[0])
 
-    for i in range(0,len(clubTrnsArr),2):
-        if (i+1)==len(clubTrnsArr):
+    for i in range(0,len(clubTrnsLst),2):
+        if (i+1)==len(clubTrnsLst):
             break
-        print('From {} to {}'.format(clubTrnsArr[i],clubTrnsArr[i+1]))
+        print('From {} to {}'.format(clubTrnsLst[i],clubTrnsLst[i+1]))
 
 
 
@@ -121,14 +126,14 @@ if __name__ == "__main__":
 # Naive approach would be just add together all the days the player spent at the club, but that fails to account for e.g. one injury having a knockon
 # effect (chronology of injuries).
 
-    multiArr = []
-    multiArr.append(typeInjArr)
-    multiArr.append(clubInjArr)
-    multiArr.append(daysInjArr)
-    print("type len = {}".format(len(typeInjArr)))
-    print("club len = {}".format(len(clubInjArr)))
-    print("days len = {}".format(len(daysInjArr)))
-    if not all(len(i) == len(multiArr[0]) for i in multiArr):
+    multiLst = []
+    multiLst.append(typeInjLst)
+    multiLst.append(clubInjLst)
+    multiLst.append(daysInjLst)
+    print("type len = {}".format(len(typeInjLst)))
+    print("club len = {}".format(len(clubInjLst)))
+    print("days len = {}".format(len(daysInjLst)))
+    if not all(len(i) == len(multiLst[0]) for i in multiLst):
         sys.exit("Arrays are not all the same length. This is a problem.")
 
 
