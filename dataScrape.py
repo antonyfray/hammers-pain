@@ -55,6 +55,21 @@ def getTfDates(tfPageSoup):
         print(i)
     return tfDatesLst
 
+def getDaysAtClub(tfPageSoup):
+    daysAtClubLst = []
+    print("Days spent at each club")
+    # Need to determine time spent at current club
+    currentDate = datetime.now()
+    for i in range(0,len(tfDatesLst)):
+        if i is 0:
+            days = (currentDate - tfDatesLst[i]).days
+            print(days)
+            daysAtClubLst.append(days)
+        else:
+            days = (tfDatesLst[i-1]-tfDatesLst[i]).days
+            print(days)
+            daysAtClubLst.append(days)
+    return daysAtClubLst
 
 if __name__ == "__main__":
 
@@ -89,17 +104,8 @@ if __name__ == "__main__":
     # Get date of transfer
     tfDatesLst = getTfDates(tfPageSoup)
 
-    daysAtClubLst = []
-    print("Days spent at each club")
-    # Need to determine time spent at current club
-    currentDate = datetime.now()
-    for i in range(0,len(tfDatesLst)):
-        #if (i+1)==len(tfDatesLst):
-        #  break
-        if i is 0:
-            print((currentDate - tfDatesLst[i]).days)
-        else:
-            print((tfDatesLst[i-1]-tfDatesLst[i]).days)
+    # Get days spent at each club
+    daysAtClubLst = getDaysAtClub(tfPageSoup)
 
     # Get clubs transferred between
     clubTransfers = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
