@@ -42,24 +42,40 @@ def getInjTypes(injPageSoup):
         print("Type of injury = {}".format(i))
     return typeInjLst
 
+def getTfDates(tfPageSoup):
+    tfDatesLst = []
+    tfDates = tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['zentriert','hide-for-small']))
+    for i in tfDates:
+        if "," in i.text:
+            # need to convert date format into datetime object for processing
+            tfDatesLst.append(datetime.strptime(i.text, '%b %d, %Y'))
+
+    print("Transfer dates:")
+    for i in tfDatesLst:
+        print(i)
+    return tfDatesLst
+
+
 if __name__ == "__main__":
-    #
-    # From input
-    #
+
+    # User input
     playerName = sys.argv[1] # must be lower case
     playerID = sys.argv[2]
     print("playerName = {}".format(playerName))
     print("playerID = {}".format(playerID))
-    #
+
     # BeautifulSoup config
-    #
     headers = {'User-Agent':
         'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
 
-    # Begin Andy Carroll injury scrape
+    # Player scrape - injuries
     injPage = "https://www.transfermarkt.co.uk/"+playerName+"/verletzungen/spieler/"+playerID
     injPageTree = requests.get(injPage, headers=headers)
     injPageSoup = BeautifulSoup(injPageTree.content, 'html.parser')
+    # Player scrape -transfers
+    tfPage = "https://www.transfermarkt.co.uk/"+playerName+"/transfers/spieler/"+playerID
+    tfPageTree = requests.get(tfPage, headers=headers)
+    tfPageSoup = BeautifulSoup(tfPageTree.content, 'html.parser')
 
     # Get and store nDaysInjured
     daysInjLst = getDaysInj(injPageSoup)
@@ -70,28 +86,13 @@ if __name__ == "__main__":
     # Get and store injury type
     typeInjLst = getInjTypes(injPageSoup)
 
-    #
     # Get date of transfer
-    #
-    tfPage = "https://www.transfermarkt.co.uk/"+playerName+"/transfers/spieler/"+playerID
-    tfPageTree = requests.get(tfPage, headers=headers)
-    tfPageSoup = BeautifulSoup(tfPageTree.content, 'html.parser')
-    tfDates = tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['zentriert','hide-for-small']))
-    tfDatesLst = []
-    for i in tfDates:
-        if "," in i.text:
-            # need to convert date format into datetime object for processing
-            tfDatesLst.append(datetime.strptime(i.text, '%b %d, %Y'))
-
-    print("Transfer dates:")
-    for i in tfDatesLst:
-        print(i)
+    tfDatesLst = getTfDates(tfPageSoup)
 
     daysAtClubLst = []
     print("Days spent at each club")
     # Need to determine time spent at current club
     currentDate = datetime.now()
-    print("currentDate = {}".format(currentDate))
     for i in range(0,len(tfDatesLst)):
         #if (i+1)==len(tfDatesLst):
         #  break
@@ -100,9 +101,7 @@ if __name__ == "__main__":
         else:
             print((tfDatesLst[i-1]-tfDatesLst[i]).days)
 
-    #
     # Get clubs transferred between
-    #
     clubTransfers = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
 
     clubTrnsLst = []
