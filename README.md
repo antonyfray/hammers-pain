@@ -9,11 +9,16 @@ python dataScrape.py andy-carroll 48066
 ```
  Name        | ID  
  --- | ---
- andy-carroll | 48066 
- kieron-dyer | 3118 
- robert-snodgrass | 22614 
- manuel-lanzini | 135853 
+ andy-carroll | 48066
+ kieron-dyer | 3118
+ robert-snodgrass | 22614
+ manuel-lanzini | 135853
 
+# NOTE
+This project is far from finished. I am slowly working on it in my spare time, but please appreciate this is not a "released" version,
+or an accurate representation of the highest level to which I can code (well...)
+
+tldr; this is a work in progress!
 
 # TODO
 - utility for looking up tfmarkt ID from player name
@@ -22,3 +27,4 @@ python dataScrape.py andy-carroll 48066
 - tighten security in general
 - tidy dataScrape.py into functions, it's a massive mess
 - write proper tests
+- add mechanism to scrape multiple pages of injury history (so plots are actually correct)
