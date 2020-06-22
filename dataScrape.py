@@ -32,6 +32,18 @@ def getClubInjFor(injPageSoup):
         print("Club inj for = {}".format(i))
     return clubInjList
 
+def getTotalDaysInjured(clubInjList, daysInjList):
+    daysInjDict = {}
+    for i in range(0,len(clubInjList),1):
+        if clubInjList[i] in daysInjDict:
+            daysInjDict[clubInjList[i]] += float(daysInjList[i])
+        else:
+            daysInjDict[clubInjList[i]] = float(daysInjList[i])
+
+    for key, value in daysInjDict.items():
+        print("Club: {} Days: {}".format(key,value))
+    return daysInjDict
+
 def getInjTypes(injPageSoup):
     typeInjList = []
     # Many classes have hauptlink in name but we want an exact match
@@ -143,7 +155,7 @@ if __name__ == "__main__":
     # Get list of clubs (to correspond to daysAtClub)
     clubHistList = getClubHistory(tfPageSoup)
 
-
+    daysInjDict = getTotalDaysInjured(clubInjList,daysInjList)
 # TODO figure out how this time normalisation will work - are we doing total days at club or by season?
 # We need to use the above to determine how long a player played for each club
 # Could do a function that takes clubTrnsArr and tfDatesArr and determines length of period at each club
@@ -163,14 +175,15 @@ if __name__ == "__main__":
         sys.exit("Arrays are not all the same length. This is a problem.")
 
     # TODO plot in different file, read in dataframe and do it that way
-    plt.bar(clubHistList,daysAtClubList, label=playerName)
+    plt.bar(clubHistList,daysAtClubList,color='b',label='Days at Club')
+    plt.bar(daysInjDict.keys(),daysInjDict.values(),alpha=0.5,color='r',label='Days Injured')
     plt.xlabel("Club")
-    plt.ylabel("Days Spent at Club")
+    plt.ylabel("Days")
     plt.legend(loc="upper right")
     fig1 = plt.gcf() # get current figure - before we save locally
     plt.show()
     plt.draw()
-    fig1.savefig("clubVsDays.png")
+    fig1.savefig(playerName+".png")
 
 
 # TODO
