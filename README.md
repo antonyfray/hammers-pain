@@ -1,3 +1,4 @@
+# Overview
 This repo will analyse whether the number of injuries a football player experiences throughout their career increases
 after moving to West Ham.
 
@@ -13,6 +14,10 @@ python dataScrape.py andy-carroll 48066
  kieron-dyer | 3118
  robert-snodgrass | 22614
  manuel-lanzini | 135853
+
+# Pipeline
+This project is supported with a pipeline provided by [Gitlab](https://gitlab.com/antonyfray/hammers-pain) which makes use of a 
+specific gitlab-runner. The stages of the pipeline, and tests within this repo are all to works in progress.
 
 # NOTE
 This project is far from finished. I am slowly working on it in my spare time, but please appreciate this is not a "released" version,
