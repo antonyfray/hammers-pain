@@ -16,8 +16,14 @@ python dataScrape.py andy-carroll 48066
  manuel-lanzini | 135853
 
 # Pipeline
-This project is supported with a pipeline provided by [Gitlab](https://gitlab.com/antonyfray/hammers-pain) which makes use of a 
-specific gitlab-runner. The stages of the pipeline, and tests within this repo are all to works in progress.
+This project is supported with a pipeline provided by [Gitlab](https://gitlab.com/antonyfray/hammers-pain) which makes use of a
+specific [gitlab-runner](https://docs.gitlab.com/runner/) hosted on my PC.
+This saves me costs on outsourcing to a cloud provider, and allows me to use a local image.
+
+If you make a commit to this repo, and wish to trigger the pipeline, my runners will need to be running - otherwise the pipeline job will stall!
+
+The use of a local gitlab-runner is not optimal for co-development, but it's not something I've used before,
+so I saw this project as an opportunity to try it out. In future I may implement a better solution for CI.
 
 # NOTE
 This project is far from finished. I am slowly working on it in my spare time, but please appreciate this is not a "released" version,
