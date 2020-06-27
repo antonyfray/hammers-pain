@@ -10,8 +10,8 @@ test-carroll:
 #  - easy_install pip
   - python3 -V
 #  - pip install requests
-#  - python3 dataScrape.py andy-carroll 48066
-  - python3 testPipeline.py 
+  - python3 dataScrape.py andy-carroll 48066
+#  - python3 testPipeline.py 
 #test-lanzini:
 #  stage: scrape-lanzini
 #  script:
