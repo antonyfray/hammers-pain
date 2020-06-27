@@ -8,169 +8,157 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def getDaysInj(injPageSoup):
-    daysInjList = []
-    DaysInjured = injPageSoup.find_all("td", {"class": "rechts"})
-    for i in DaysInjured:
-        if "days" in i.text:
-            daysInjList.append(i.text.split()[0])
+# BeautifulSoup config
+headers = {'User-Agent':
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
 
-    for i in daysInjList:
-        print("Days inj = {}".format(i))
-    return daysInjList
+class Player():
+    # After init, accessible properties of class:
+    # playerName - Name of player
+    # playerID - ID of player on transfermarkt
+    # injPageSoup - BeautifulSoup for player's injury history page
+    # tfPageSoup - BeautifulSoup for player's transfer history page
+    # daysInjList - List of days player was injured for for each injury instance
+    # clubInjList - List of clubs player was signed to for each injury instance
+    # typeInjList - List of injury types player suffered with
+    # tfDatesList - List of dates on which player transferred from one club to another
+    # clubHistList - List of clubs player was signed to
 
-def getClubInjFor(injPageSoup):
-    # wappen is German for coat of arms i.e. club badge. All of the img sources have this in their endpoint
-    clubInjList = []
-    ClubInjuredFor = injPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
-    for i in ClubInjuredFor:
-        clubInjList.append(i["alt"])
+    def __init__(self, playerName, playerID):
+        self.playerName = playerName
+        self.playerID = playerID # TODO add utility to obtain playerID from playerName, rather than have user pass it
+        self.setPageSoups()
+        self.scrapeDaysInj()
+        self.scrapeClubInjFor()
+        self.scrapeInjTypes()
+        self.scrapeTransferDates()
+        self.scrapeClubHistory()
+
+    def setPageSoups(self):
+        # Injuries
+        injPage = "https://www.transfermarkt.co.uk/"+self.playerName+"/verletzungen/spieler/"+self.playerID
+        injPageTree = requests.get(injPage, headers=headers)
+        self.injPageSoup = BeautifulSoup(injPageTree.content, 'html.parser')
+
+        # Transfers
+        tfPage = "https://www.transfermarkt.co.uk/"+playerName+"/transfers/spieler/"+playerID
+        tfPageTree = requests.get(tfPage, headers=headers)
+        self.tfPageSoup = BeautifulSoup(tfPageTree.content, 'html.parser')
+
+    def scrapeDaysInj(self):
+        self.daysInjList = []
+        DaysInjured = self.injPageSoup.find_all("td", {"class": "rechts"})
+        for i in DaysInjured:
+            if "days" in i.text:
+                self.daysInjList.append(i.text.split()[0])
+
+        for i in self.daysInjList:
+            print("Days inj = {}".format(i))
+
+    def scrapeClubInjFor(self):
+        # wappen is German for coat of arms i.e. club badge. All of the img sources have this in their endpoint
+        self.clubInjList = []
+        ClubInjuredFor = self.injPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
+        for i in ClubInjuredFor:
+            self.clubInjList.append(i["alt"])
         # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
-    del(clubInjList[0])
+        del(self.clubInjList[0])
 
-    for i in clubInjList:
-        print("Club inj for = {}".format(i))
-    return clubInjList
+        for i in self.clubInjList:
+            print("Club inj for = {}".format(i))
 
-def getTotalDaysInjured(clubInjList, daysInjList):
-    daysInjDict = {}
-    for i in range(0,len(clubInjList),1):
-        if clubInjList[i] in daysInjDict:
-            daysInjDict[clubInjList[i]] += float(daysInjList[i])
-        else:
-            daysInjDict[clubInjList[i]] = float(daysInjList[i])
+    def scrapeInjTypes(self):
+        self.typeInjList = []
+        # Many classes have hauptlink in name but we want an exact match
+        # most recent injury is also highlighted red (bg_rot_20) so we need to collect that too
+        TypeOfInjury = self.injPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['hauptlink'] or tag.get('class') == ['hauptlink','bg_rot_20']))
+        for i in TypeOfInjury:
+            print(i.text)
+            self.typeInjList.append(i.text)
 
-    for key, value in daysInjDict.items():
-        print("Club: {} Days: {}".format(key,value))
-    return daysInjDict
+        for i in self.typeInjList:
+            print("Type of injury = {}".format(i))
 
-def getInjTypes(injPageSoup):
-    typeInjList = []
-    # Many classes have hauptlink in name but we want an exact match
-    # most recent injury is also highlighted red (bg_rot_20) so we need to collect that too
-    TypeOfInjury = injPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['hauptlink'] or tag.get('class') == ['hauptlink','bg_rot_20']))
-    for i in TypeOfInjury:
-        print(i.text)
-        typeInjList.append(i.text)
+    def scrapeTransferDates(self):
+        self.tfDatesList = []
+        tfDates = self.tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['zentriert','hide-for-small']))
+        for i in tfDates:
+            if "," in i.text:
+                # need to convert date format into datetime object for processing
+                self.tfDatesList.append(datetime.strptime(i.text, '%b %d, %Y'))
 
-    for i in typeInjList:
-        print("Type of injury = {}".format(i))
-    return typeInjList
+        print("Transfer dates:")
+        for i in self.tfDatesList:
+            print(i)
 
-def getTransferDates(tfPageSoup):
-    tfDatesList = []
-    tfDates = tfPageSoup.find_all(lambda tag: tag.name == 'td' and (tag.get('class') == ['zentriert','hide-for-small']))
-    for i in tfDates:
-        if "," in i.text:
-            # need to convert date format into datetime object for processing
-            tfDatesList.append(datetime.strptime(i.text, '%b %d, %Y'))
+    def scrapeClubHistory(self):
+        self.clubHistList = []
+        clubHistory = self.tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
 
-    print("Transfer dates:")
-    for i in tfDatesList:
-        print(i)
-    return tfDatesList
-
-def getDaysAtClub(tfPageSoup):
-    daysAtClubList = []
-    print("Days spent at each club")
-    # Need to determine time spent at current club
-    currentDate = datetime.now()
-    for i in range(0,len(tfDatesList)):
-        if i is 0:
-            days = (currentDate - tfDatesList[i]).days
-            print(days)
-            daysAtClubList.append(days)
-        else:
-            days = (tfDatesList[i-1]-tfDatesList[i]).days
-            print(days)
-            daysAtClubList.append(days)
-    return daysAtClubList
-
-def getClubHistory(tfPageSoup):
-    clubHistList = []
-    clubHistory = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
-
-    for i in clubHistory:
-        clubHistList.append(i["alt"])
-    # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
-    del(clubHistList[0])
-
-    return clubHistList[1::2]
-
-def getClubTransfers(tfPageSoup):
-    # TODO start of this is duplicated with the above. Should have one function that returns a list/tuple of lists
-    clubTrnsList = []
-    clubTransfers = tfPageSoup.find_all("img", src=lambda x: x and 'wappen' in x)
-
-    for i in clubTransfers:
-        clubTrnsList.append(i["alt"])
+        for i in clubHistory:
+            self.clubHistList.append(i["alt"])
         # current code also picks up current club as an extra entry (badge at top of screen) so we need to remove that
-    del(clubTrnsList[0])
+        del(self.clubHistList[0])
+        # History obtained above prints (Club 1 --> Club 2, Club 2 --> Club 3, so we need to remove duplicates from final result)
+        self.clubHistList = self.clubHistList[1::2]
+        self.printClubTransfers()
 
-    for i in range(0,len(clubTrnsList),2):
-        if (i+1)==len(clubTrnsList):
-            break
-        print('From {} to {}'.format(clubTrnsList[i],clubTrnsList[i+1]))
-    return clubTrnsList
+    def printClubTransfers(self):
+        for i in range(0,len(self.clubHistList),2):
+            if (i+1)==len(self.clubHistList):
+                break
+            print('From {} to {}'.format(self.clubHistList[i],self.clubHistList[i+1]))
+
+    def calcTotalDaysInjured(self):
+        daysInjDict = {}
+        for i in range(0,len(self.clubInjList),1):
+            if self.clubInjList[i] in daysInjDict:
+                daysInjDict[self.clubInjList[i]] += float(self.daysInjList[i])
+            else:
+                daysInjDict[self.clubInjList[i]] = float(self.daysInjList[i])
+
+        for key, value in daysInjDict.items():
+            print("Club: {} Days: {}".format(key,value))
+        return daysInjDict
+
+    def calcDaysAtClub(self):
+        daysAtClubList = []
+        print("Days spent at each club")
+        # Need to determine time spent at current club
+        currentDate = datetime.now()
+        for i in range(0,len(self.tfDatesList)):
+            if i is 0:
+                days = (currentDate - self.tfDatesList[i]).days
+                print(days)
+                daysAtClubList.append(days)
+            else:
+                days = (self.tfDatesList[i-1]-self.tfDatesList[i]).days
+                print(days)
+                daysAtClubList.append(days)
+        return daysAtClubList
 
 if __name__ == "__main__":
 
     # User input
-    playerName = sys.argv[1] # must be lower case
-    playerID = sys.argv[2]
-    print("playerName = {}".format(playerName))
-    print("playerID = {}".format(playerID))
+    playerName = sys.argv[1] # TODO enforce string and add lower-case
+    playerID = sys.argv[2] #TODO enforce integer
 
-    # BeautifulSoup config
-    headers = {'User-Agent':
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
+    playerInQuestion = Player(playerName,playerID)
+    print("playerName = {}".format(playerInQuestion.playerName))
+    print("playerID = {}".format(playerInQuestion.playerID))
 
-    # Player scrape - injuries
-    injPage = "https://www.transfermarkt.co.uk/"+playerName+"/verletzungen/spieler/"+playerID
-    injPageTree = requests.get(injPage, headers=headers)
-    injPageSoup = BeautifulSoup(injPageTree.content, 'html.parser')
-    # Player scrape -transfers
-    tfPage = "https://www.transfermarkt.co.uk/"+playerName+"/transfers/spieler/"+playerID
-    tfPageTree = requests.get(tfPage, headers=headers)
-    tfPageSoup = BeautifulSoup(tfPageTree.content, 'html.parser')
+    clubHistList = playerInQuestion.clubHistList
+    daysAtClubList = playerInQuestion.calcDaysAtClub()
+    daysInjDict = playerInQuestion.calcTotalDaysInjured()
 
-    # Get and store nDaysInjured
-    daysInjList = getDaysInj(injPageSoup)
-
-    # Get and store club player is signed to while injured
-    clubInjList = getClubInjFor(injPageSoup)
-
-    # Get and store injury type
-    typeInjList = getInjTypes(injPageSoup)
-
-    # Get date of transfer
-    tfDatesList = getTransferDates(tfPageSoup)
-
-    # Get days spent at each club
-    daysAtClubList = getDaysAtClub(tfPageSoup)
-
-    # Get clubs transferred between
-    clubTrnsList = getClubTransfers(tfPageSoup)
-
-    # Get list of clubs (to correspond to daysAtClub)
-    clubHistList = getClubHistory(tfPageSoup)
-
-    daysInjDict = getTotalDaysInjured(clubInjList,daysInjList)
-# TODO figure out how this time normalisation will work - are we doing total days at club or by season?
-# We need to use the above to determine how long a player played for each club
-# Could do a function that takes clubTrnsArr and tfDatesArr and determines length of period at each club
-# Then have two DF columns - club played for and time played for (in days)...but how would this work with transferring to and from clubs?
-# Group by season? By time signed to club?
-# Naive approach would be just add together all the days the player spent at the club, but that fails to account for e.g. one injury having a knockon
-# effect (chronology of injuries).
-
+    # TODO update below to use proper test syntax and methods
     multiList = []
-    multiList.append(typeInjList)
-    multiList.append(clubInjList)
-    multiList.append(daysInjList)
-    print("type len = {}".format(len(typeInjList)))
-    print("club len = {}".format(len(clubInjList)))
-    print("days len = {}".format(len(daysInjList)))
+    multiList.append(playerInQuestion.typeInjList)
+    multiList.append(playerInQuestion.clubInjList)
+    multiList.append(playerInQuestion.daysInjList)
+    print("type len = {}".format(len(playerInQuestion.typeInjList)))
+    print("club len = {}".format(len(playerInQuestion.clubInjList)))
+    print("days len = {}".format(len(playerInQuestion.daysInjList)))
     if not all(len(i) == len(multiList[0]) for i in multiList):
         sys.exit("Arrays are not all the same length. This is a problem.")
 
@@ -197,3 +185,11 @@ if __name__ == "__main__":
 # TODO Functionality
 # 1) If there are multiple pages of injury history, need a way to know how many pages of info there are
 # - Can add "ajax/yw1/page/2" to link but at some point we won't get a 200
+
+# TODO figure out how this time normalisation will work - are we doing total days at club or by season?
+# We need to use the above to determine how long a player played for each club
+# Could do a function that takes clubTrnsArr and tfDatesArr and determines length of period at each club
+# Then have two DF columns - club played for and time played for (in days)...but how would this work with transferring to and from clubs?
+# Group by season? By time signed to club?
+# Naive approach would be just add together all the days the player spent at the club, but that fails to account for e.g. one injury having a knockon
+# effect (chronology of injuries).
