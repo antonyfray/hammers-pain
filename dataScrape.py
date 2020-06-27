@@ -1,9 +1,10 @@
 # taken from https://fcpython.com/blog/introduction-scraping-data-transfermarkt
 import requests
 from bs4 import BeautifulSoup
-import pandas as pd
 from datetime import datetime
 import sys
+import re
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -137,11 +138,25 @@ class Player():
                 daysAtClubList.append(days)
         return daysAtClubList
 
+def sanitiseInputs(playerName,playerID):
+    try:
+        str(playerName).lower()
+        int(playerID)
+    except(TypeError):
+        sys.exit("playerName (arg1) must be a valid string")
+    except(ValueError):
+        sys.exit("playerID (arg2) must be a valid integer")
+
+    if re.search(r"^(.[a-z]*)-(.[a-z]*)$",playerName) == None:
+        sys.exit("playerName should only contain a-z characters and a central hyphen (-)")
+
 if __name__ == "__main__":
 
     # User input
     playerName = sys.argv[1] # TODO enforce string and add lower-case
     playerID = sys.argv[2] #TODO enforce integer
+
+    sanitiseInputs(playerName,playerID)
 
     playerInQuestion = Player(playerName,playerID)
     print("playerName = {}".format(playerInQuestion.playerName))
