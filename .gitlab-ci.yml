@@ -2,17 +2,10 @@
 
 stages:
   - scrape-carroll
-  - scrape-lanzini
 
 test-carroll:
   stage: scrape-carroll
   script:
-#  - easy_install pip
   - python3 -V
-  - pip3 install requests
+  - pip3 install -r requirements.txt
   - python3 dataScrape.py andy-carroll 48066
-#  - python3 testPipeline.py
-#test-lanzini:
-#  stage: scrape-lanzini
-#  script:
-#  - python3 dataScrape.py manuel-lanzini 135853
